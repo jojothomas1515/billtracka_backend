@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const morgan_1 = __importDefault(require("morgan"));
 const routes_1 = __importDefault(require("./routes"));
+// import fs from 'fs';
 const authRouter_1 = __importDefault(require("./routes/authRouter"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();

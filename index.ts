@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import morgan from 'morgan';
 import defaultRouter from './routes';
-import fs from 'fs';
+// import fs from 'fs';
 import authRouter from './routes/authRouter';
 import { errorHandler } from './middleware/errorHandler';
 
