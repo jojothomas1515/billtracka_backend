@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: install dependencies
-        run: echo "hello team"
+        run: npm install
 
 
