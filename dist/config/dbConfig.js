@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { configDotenv } from 'dotenv';
 configDotenv();
+import User from '../models/userModel.js';
 // import { dirname } from 'path';
 // import { fileURLToPath } from 'url';
 //
@@ -13,5 +14,6 @@ const sequelize = new Sequelize({
     dialect: 'postgres',
     // models: [__dirname + '/../models'],
 });
+sequelize.addModels([User]);
 export default sequelize;
 //# sourceMappingURL=dbConfig.js.map
