@@ -1,25 +1,38 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.signUp = void 0;
-const errors_1 = require("../error/errors");
-const validator_1 = require("../util/validator");
-function signUp(req, res, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const { email, phone, password } = req.body;
-        if (!email && !phone) {
-            throw new errors_1.Unauthorized('Email or Phone Number is required to signup');
+import { Unauthorized } from '../error/errors.js';
+import { passwordValidator } from '../util/validator.js';
+import { hash } from 'bcrypt';
+import User from '../models/userModel.js';
+export async function signUp(req, res) {
+    const { email, phone, password, firstName, lastName } = req.body;
+    if (!email && !phone) {
+        throw new Unauthorized('Email or Phone Number is required to signup');
+    }
+    passwordValidator(password);
+    if (email) {
+        const user = await User.findOne({ where: { email } });
+        if (user) {
+            throw new Unauthorized('Email already exists');
         }
-        (0, validator_1.passwordValidator)(password);
-        return res.json({ message: 'do nothing' });
+    }
+    if (phone) {
+        const user = await User.findOne({ where: { phone } });
+        if (user) {
+            throw new Unauthorized('Phone Number already exists');
+        }
+    }
+    const hashedPassword = await hash(password, 10);
+    const user = await User.create({
+        firstName,
+        lastName,
+        email,
+        phone,
+        hashedPassword,
+    });
+    if (!user) {
+        throw new Unauthorized('User not created');
+    }
+    return res.status(201).json({
+        message: 'User created successfully',
     });
 }
-exports.signUp = signUp;
+//# sourceMappingURL=authController.js.map

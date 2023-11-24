@@ -13,35 +13,35 @@ class User extends Model {
     type: DataType.UUID,
     primaryKey: true,
   })
-  id!: string;
+  declare id: string;
 
   @Column({ field: 'first_name', type: DataType.STRING })
-  firstName!: string;
+  declare firstName: string;
 
   @Column({ field: 'last_name', type: DataType.STRING })
-  lastName!: string;
+  declare lastName: string;
 
   @Column(DataType.STRING)
-  email!: string;
+  declare email: string;
 
   @Column(DataType.STRING)
-  phone!: string;
+  declare phone: string;
 
   @Column({ type: DataType.STRING, field: 'hashed_password' })
-  hashedPassword!: string;
+  declare hashedPassword: string;
 
   @Column({ type: DataType.STRING, field: 'refresh_token' })
-  refreshToken!: string;
+  declare refreshToken: string;
 
   @Column({ type: DataType.STRING, field: 'google_id' })
-  googleId!: string;
+  declare googleId: string;
   @Column({ type: DataType.STRING, field: 'github_id' })
-  githubId!: string;
+  declare githubId: string;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @CreatedAt
-  createdAt!: Date;
+  declare createdAt: Date;
 }
 
 export default User;

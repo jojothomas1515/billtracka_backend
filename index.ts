@@ -1,9 +1,10 @@
-import express, { Express } from 'express';
+import express from 'express';
 import morgan from 'morgan';
-import defaultRouter from './routes';
+import defaultRouter from './routes/index.js';
 // import fs from 'fs';
-import authRouter from './routes/authRouter';
-import { errorHandler } from './middleware/errorHandler';
+import authRouter from './routes/authRouter.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { Express } from 'express';
 
 const app: Express = express();
 
