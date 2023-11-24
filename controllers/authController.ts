@@ -4,6 +4,7 @@ import { passwordValidator } from '../util/validator.js';
 import jwt from 'jsonwebtoken';
 import { compare, hash } from 'bcrypt';
 import User from '../models/userModel.js';
+import { sendWelcomeMail } from '../util/mailer.js';
 
 export async function signUp(req: Request, res: Response): Promise<Response> {
   const { email, phone, password, firstName, lastName } = req.body;
@@ -40,7 +41,14 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
   if (!user) {
     throw new Unauthorized('User not created');
   }
-
+  const mailStatus = await sendWelcomeMail(
+    user.email,
+    'https://billtracka.com/verify'
+  );
+  if (!mailStatus.response.includes('OK')) {
+    await user.destroy();
+    throw new Unauthorized('User not created');
+  }
   return res.status(201).json({
     message: 'User created successfully',
     user,
