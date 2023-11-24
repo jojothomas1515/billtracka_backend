@@ -3,7 +3,8 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 export async function sendWelcomeMail(
   to: string,
-  verifyUrl: string
+  verifyUrl: string,
+  code: string
 ): Promise<SMTPTransport.SentMessageInfo> {
   return transport.sendMail({
     from: process.env.SMTPUSER ?? '',
@@ -12,6 +13,7 @@ export async function sendWelcomeMail(
     templateName: 'welcome',
     templateData: {
       verifyUrl: verifyUrl,
+      code,
     },
   });
 }
