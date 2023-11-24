@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { compare, hash } from 'bcrypt';
 import User from '../models/userModel.js';
 import { sendWelcomeMail } from '../util/mailer.js';
+import { VERIFICATION_URL } from '../config/config.js';
 
 export async function signUp(req: Request, res: Response): Promise<Response> {
   const { email, phone, password, firstName, lastName } = req.body;
@@ -41,9 +42,16 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
   if (!user) {
     throw new Unauthorized('User not created');
   }
+  const verificationToken: string = jwt.sign(
+    { id: user.id },
+    process.env.JWTSECRET!,
+    {
+      expiresIn: '2h',
+    }
+  );
   const mailStatus = await sendWelcomeMail(
     user.email,
-    'https://billtracka.com/verify'
+    `${VERIFICATION_URL}?token=${verificationToken}`
   );
   if (!mailStatus.response.includes('OK')) {
     await user.destroy();
@@ -100,5 +108,27 @@ export async function signIn(req: Request, res: Response): Promise<Response> {
     user,
     token,
     refreshToken: user.refreshToken,
+  });
+}
+
+export async function verifyUser(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { token } = req.params;
+  const decoded: jwt.JwtPayload & { id: string } = jwt.verify(
+    token,
+    process.env.JWTSECRET!
+  ) as jwt.JwtPayload & { id: string };
+
+  const user: User | null = await User.findByPk(decoded.id);
+  if (!user) {
+    throw new Unauthorized('User not found');
+  }
+  user.isVerified = true;
+  await user.save();
+  return res.status(200).json({
+    message: 'User verified successfully',
+    user,
   });
 }
