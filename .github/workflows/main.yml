@@ -11,6 +11,6 @@ jobs:
 
     steps:
       - name: install dependencies
-        run: npm install
+        run: echo "hello team"
 
 
