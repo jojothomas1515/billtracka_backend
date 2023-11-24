@@ -4,7 +4,7 @@ export function passwordValidator(password: string) {
   const containUppercase = /[A-Z]/;
   const containLowercase = /[a-z]/;
   const containDigit = /\d/;
-  const validLength = /[a-zA-Z/d-]{8,}/;
+  const validLength = /.{8,}/;
   if (!validLength.test(password)) {
     throw new BadRequest('Password must be of 8 or more length');
   }

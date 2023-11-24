@@ -37,11 +37,22 @@ class User extends Model {
   declare googleId: string;
   @Column({ type: DataType.STRING, field: 'github_id' })
   declare githubId: string;
+  @Column({ type: DataType.BOOLEAN, field: 'is_verified' })
+  declare isVerified: boolean;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @CreatedAt
   declare createdAt: Date;
+
+  toJSON() {
+    const data = super.toJSON();
+    delete data.hashedPassword;
+    delete data.refreshToken;
+    delete data.googleId;
+    delete data.githubId;
+    return data;
+  }
 }
 
 export default User;
