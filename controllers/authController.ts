@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Unauthorized } from '../error/errors.js';
+import { BadRequest, Unauthorized } from '../error/errors.js';
 import { passwordValidator } from '../util/validator.js';
 import jwt from 'jsonwebtoken';
 import { compare, hash } from 'bcrypt';
@@ -49,6 +49,8 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
       expiresIn: '2h',
     }
   );
+  user.verificationToken = verificationToken;
+  await user.save();
   const mailStatus = await sendWelcomeMail(
     user.email,
     `${VERIFICATION_URL}?token=${verificationToken}`
@@ -115,17 +117,24 @@ export async function verifyUser(
   req: Request,
   res: Response
 ): Promise<Response> {
-  const { token } = req.params;
+  const { token } = req.query;
+  if (!token) {
+    throw new BadRequest('Token not found');
+  }
   const decoded: jwt.JwtPayload & { id: string } = jwt.verify(
-    token,
+    token as string,
     process.env.JWTSECRET!
   ) as jwt.JwtPayload & { id: string };
-
   const user: User | null = await User.findByPk(decoded.id);
   if (!user) {
     throw new Unauthorized('User not found');
   }
+
+  if (token !== user.verificationToken) {
+    throw new BadRequest('link not longer valid');
+  }
   user.isVerified = true;
+  user.verificationToken = '';
   await user.save();
   return res.status(200).json({
     message: 'User verified successfully',
