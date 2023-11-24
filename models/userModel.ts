@@ -41,7 +41,7 @@ class User extends Model {
   declare isVerified: boolean;
 
   @Column({ type: DataType.STRING, field: 'verification_token' })
-  declare verificationToken: string;
+  declare verificationToken: string | null;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

@@ -42,18 +42,14 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
   if (!user) {
     throw new Unauthorized('User not created');
   }
-  const verificationToken: string = jwt.sign(
-    { id: user.id },
-    process.env.JWTSECRET!,
-    {
-      expiresIn: '2h',
-    }
-  );
+  const verificationToken: string = (Math.random() * 9999)
+    .toString(36)
+    .slice(2);
   user.verificationToken = verificationToken;
   await user.save();
   const mailStatus = await sendWelcomeMail(
     user.email,
-    `${VERIFICATION_URL}?token=${verificationToken}`
+    `${VERIFICATION_URL}?code=${verificationToken}&?id=${user.id}`
   );
   if (!mailStatus.response.includes('OK')) {
     await user.destroy();
@@ -117,24 +113,27 @@ export async function verifyUser(
   req: Request,
   res: Response
 ): Promise<Response> {
-  const { token } = req.query;
-  if (!token) {
+  const { code, id } = req.query;
+  if (!code) {
     throw new BadRequest('Token not found');
   }
-  const decoded: jwt.JwtPayload & { id: string } = jwt.verify(
-    token as string,
-    process.env.JWTSECRET!
-  ) as jwt.JwtPayload & { id: string };
-  const user: User | null = await User.findByPk(decoded.id);
+  if (!id) {
+    throw new BadRequest('User not found');
+  }
+  // const decoded: jwt.JwtPayload & { id: string } = jwt.verify(
+  //   token as string,
+  //   process.env.JWTSECRET!
+  // ) as jwt.JwtPayload & { id: string };
+  const user: User | null = await User.findByPk(id as string);
   if (!user) {
     throw new Unauthorized('User not found');
   }
 
-  if (token !== user.verificationToken) {
+  if (code !== user.verificationToken) {
     throw new BadRequest('link not longer valid');
   }
   user.isVerified = true;
-  user.verificationToken = '';
+  user.verificationToken = null;
   await user.save();
   return res.status(200).json({
     message: 'User verified successfully',
