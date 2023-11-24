@@ -69,6 +69,10 @@ export async function signIn(req: Request, res: Response): Promise<Response> {
     throw new Unauthorized('User not found');
   }
 
+  if (!user.isVerified) {
+    throw new Unauthorized('The users is not verified');
+  }
+
   const isMatch: boolean = await compare(password, user.hashedPassword);
 
   if (!isMatch) {
