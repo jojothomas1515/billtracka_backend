@@ -42,5 +42,6 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
 
   return res.status(201).json({
     message: 'User created successfully',
+    user,
   });
 }
