@@ -1,3 +1,16 @@
+---
+name: BillTracka
+
 on:
   push:
-    branches
+    branches:
+      - master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: install dependencies
+        run: npm install
+
+
