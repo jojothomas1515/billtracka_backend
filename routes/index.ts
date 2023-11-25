@@ -7,7 +7,10 @@ import { isAuth } from '../middleware/isAuthenticated.js';
 const defaultRouter: Router = Router();
 
 defaultRouter.get('/status', (req: Request, res: Response) => {
-  return res.json({ status: 'alive', message: 'it a wonderful day' });
+  return res.json({
+    status: 'alive',
+    message: 'it a wonderful day, is it not?',
+  });
 });
 
 defaultRouter.use('/auth', authRouter);
