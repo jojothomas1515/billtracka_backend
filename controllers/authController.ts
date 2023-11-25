@@ -42,12 +42,12 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
   if (!user) {
     throw new Unauthorized('User not created');
   }
-  const code: string = (Math.random() * 9999).toString(36).slice(2);
+  const code: string = Math.floor(Math.random() * 9999).toString();
   user.verificationToken = code;
   await user.save();
   const mailStatus = await sendWelcomeMail(
     user.email,
-    `${VERIFICATION_URL}?code=${code}&?id=${user.id}`,
+    `${VERIFICATION_URL}?code=${code}&id=${user.id}`,
     code
   );
   if (!mailStatus.response.includes('OK')) {

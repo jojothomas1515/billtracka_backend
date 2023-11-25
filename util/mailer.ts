@@ -13,7 +13,7 @@ export async function sendWelcomeMail(
     templateName: 'welcome',
     templateData: {
       verifyUrl: verifyUrl,
-      code,
+      code: code,
     },
   });
 }
