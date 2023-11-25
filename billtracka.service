@@ -1,0 +1,13 @@
+[Unit]
+Description=Billtracka backend
+After=network.target
+
+[Service]
+WorkingDirectory=/home/jojo/billtracka_backend
+Environment=PORT=4000
+ExecStart=/run/user/1000/fnm_multishells/256638_1700950246633/bin/node /home/jojo/billtracka_backend/dist/index.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
