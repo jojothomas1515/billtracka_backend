@@ -7,6 +7,7 @@ import {
 
 const router: Router = Router();
 
+// TODO: Add auth middleware
 router.post('/', createInvoice);
 router.get('/', getInvoicesByOwner);
 router.post('/:id(\\w+)', updateInvoice);
