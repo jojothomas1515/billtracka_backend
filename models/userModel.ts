@@ -43,6 +43,9 @@ class User extends Model {
   @Column({ type: DataType.STRING, field: 'verification_token' })
   declare verificationToken: string | null;
 
+  @Column({ type: DataType.STRING, field: 'business_name' })
+  declare businessName: string | null;
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @CreatedAt

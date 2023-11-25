@@ -1,8 +1,7 @@
-import { Response } from 'express';
-import { TRequest } from '../types/types.js';
+import { Request, Response } from 'express';
 
 export async function updateUser(
-  req: TRequest,
+  req: Request,
   res: Response
 ): Promise<Response> {
   const { firstName, lastName } = req.body;

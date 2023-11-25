@@ -1,12 +1,12 @@
-import { Response } from 'express';
-import { TRequest } from '../types/types.js';
+import { Response, Request } from 'express';
 import Invoice from '../models/invoiceModel.js';
-import { BadRequest } from '../error/errors.js';
+import { BadRequest, NotFound } from '../error/errors.js';
 
 export async function createInvoice(
-  req: TRequest,
+  req: Request,
   res: Response
 ): Promise<Response> {
+  console.log(req.body);
   const {
     clientName,
     clientEmail,
@@ -51,4 +51,64 @@ export async function createInvoice(
     status: 'success',
     invoice,
   });
+}
+
+export async function updateInvoice(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { id } = req.params;
+  const { user } = req;
+  const {
+    clientName,
+    clientEmail,
+    clientPhone,
+    clientAddress,
+    clientState,
+    clientCity,
+    clientCountry,
+    clientLga,
+    status,
+    items,
+    total,
+    discount,
+    amountPaid,
+    amountDue,
+  } = req.body;
+
+  const invoice = await Invoice.findOne({ where: { ownerId: user.id, id } });
+
+  if (!invoice) {
+    throw new NotFound('Invoice not found');
+  }
+
+  invoice.clientName = clientName;
+  invoice.clientEmail = clientEmail;
+  invoice.clientPhone = clientPhone;
+  invoice.clientAddress = clientAddress;
+  invoice.clientState = clientState;
+  invoice.clientCity = clientCity;
+  invoice.clientCountry = clientCountry;
+  invoice.clientLga = clientLga;
+  invoice.status = status;
+  invoice.items = items;
+  invoice.total = total;
+  invoice.discount = discount;
+  invoice.amountPaid = amountPaid;
+  invoice.amountDue = amountDue;
+
+  await invoice.save();
+
+  return res.status(201).json({
+    message: 'Invoice updated successfully',
+    invoice,
+  });
+}
+
+export async function getInvoicesByOwner(req: Request, res: Response) {
+  const { user } = req;
+
+  const invoices = await Invoice.findAll({ where: { ownerId: user.id } });
+
+  return res.json(invoices);
 }
