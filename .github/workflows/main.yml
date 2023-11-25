@@ -28,6 +28,6 @@ jobs:
           echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
       - name: connect and pull
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }}billtracka_backend && git checkout ${{ secrets.MAIN_BRANCH }} && sudo service billtracka restart && exit"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }}billtracka_backend && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && sudo service billtracka restart && exit"
       - name: cleanup
         run: rm -rf ~/.ssh
