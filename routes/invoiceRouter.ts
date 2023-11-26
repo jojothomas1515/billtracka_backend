@@ -10,6 +10,6 @@ const router: Router = Router();
 // TODO: Add auth middleware
 router.post('/', createInvoice);
 router.get('/', getInvoicesByOwner);
-router.put('/:id(\\w+)', updateInvoice);
+router.put('/:id([\\w-]+)', updateInvoice);
 
 export default router;
