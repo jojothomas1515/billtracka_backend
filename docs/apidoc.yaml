@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Bill Tracka Api Documention
+  description: |
+    # Bill Tracka
+      Api to issue and handle invoices
+  version: 1.0.0
+servers:
+  - url: 'http://billtracka.jojothomas.tech/api'
+    description: Online server
+  - url: 'http://localhost:5000/api'
+    description: Local server
+
+tags:
+  - name: Authentication
+    description: "Every thing related to signup, login, and verifying user"
+  - name: Invoice
+    description: "Every thing related to invoices"
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      description: "create a user now"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: "Successfully creates user"
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/User'
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "example@gmail.com"
+        password:
+          type: string
+          example: "password123"
+        firstName:
+          type: string
+          example: "John"
+        LastName:
+          type: "string"
+          example: "Doe"
+      xml:
+        name: "user"
+

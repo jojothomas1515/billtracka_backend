@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.14",
+    "@types/yaml": "^1.9.7",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -23,7 +24,8 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.35.1",
     "sequelize-typescript": "^2.1.5",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
