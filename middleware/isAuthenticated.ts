@@ -17,6 +17,7 @@ export async function isAuth(
   }
 
   const accessToken = authorization.split(' ')[1].trim();
+
   const decoded: DecodedData = jwt.verify(
     accessToken as string,
     JWTSECRET

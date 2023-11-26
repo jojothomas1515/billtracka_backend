@@ -105,10 +105,30 @@ export async function updateInvoice(
   });
 }
 
-export async function getInvoicesByOwner(req: Request, res: Response) {
+export async function getInvoicesByOwner(
+  req: Request,
+  res: Response
+): Promise<Response> {
   const { user } = req;
 
   const invoices = await Invoice.findAll({ where: { ownerId: user.id } });
 
   return res.json(invoices);
+}
+
+export async function getInvoiceById(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { id } = req.params;
+
+  const invoice = await Invoice.findByPk(id);
+
+  if (!invoice) {
+    throw new NotFound('Invoice Not Found');
+  }
+
+  return res.json({
+    invoice,
+  });
 }
