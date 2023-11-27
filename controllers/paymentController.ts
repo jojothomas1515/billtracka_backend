@@ -94,7 +94,7 @@ export async function verifyPayment(
 
       invoice.amountDue = invoice.amountDue - chargeAmount;
       invoice.amountPaid = invoice.amountPaid + chargeAmount;
-      invoice.status = 'paid';
+      invoice.status = 'PAID';
       await invoice.save();
     }
 
