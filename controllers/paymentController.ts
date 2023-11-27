@@ -64,9 +64,10 @@ export async function verifyPayment(
       if (!invoice) {
         return res.status(200).json({ message: 'Transfer completed 😁' });
       }
+      const chargeAmount = event.data.amount / 100;
 
-      invoice.amountDue = 0;
-      invoice.amountPaid = invoice.total;
+      invoice.amountDue = invoice.amountDue - chargeAmount;
+      invoice.amountPaid = invoice.amountPaid + chargeAmount;
       invoice.status = 'paid';
       await invoice.save();
     }
