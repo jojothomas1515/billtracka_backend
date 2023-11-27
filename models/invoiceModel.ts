@@ -58,7 +58,7 @@ class Invoice extends Model {
   @Column({ field: 'client_lga', type: DataType.STRING })
   declare clientLga: string;
 
-  @Column({ field: 'status', type: DataType.STRING })
+  @Column({ field: 'status', type: DataType.ENUM('DRAFT', 'PENDING', 'PAID') })
   declare status: string;
   //
   // @Column({ field: 'sender_address', type: DataType.STRING })

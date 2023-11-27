@@ -12,7 +12,7 @@ import { isAuth } from '../middleware/isAuthenticated.js';
 const router = Router();
 
 router.use(isAuth);
-router.post('/create', createItem);
+router.post('/', createItem);
 router.get('/', getItems);
 router.get('/:itemId', getItem);
 router.put('/:itemId', updateItem);

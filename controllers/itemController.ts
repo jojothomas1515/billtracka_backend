@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Item from '../models/itemModel.js';
-import { NotFound } from '../error/errors.js';
+import { BadRequest, NotFound } from '../error/errors.js';
 
 export const createItem = async (
   req: Request,
@@ -10,11 +10,17 @@ export const createItem = async (
 
   const { itemName, unitPrice, quantity, discount } = req.body;
 
-  if (!itemName || !unitPrice || !quantity || !discount) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'All fields are required',
-    });
+  if (!itemName) {
+    throw new BadRequest('Item name is required');
+  }
+  if (!unitPrice) {
+    throw new BadRequest('Unit price is required');
+  }
+  if (!quantity) {
+    throw new BadRequest('Quantity is required');
+  }
+  if (!discount && discount === undefined) {
+    throw new BadRequest('Discount is required');
   }
   const item = await Item.create({
     itemName,
@@ -83,14 +89,20 @@ export const updateItem = async (
 
   const { itemName, unitPrice, quantity, discount } = req.body;
 
-  if (!itemName || !unitPrice || !quantity || !discount) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'All fields are required',
-    });
+  if (!itemName) {
+    throw new BadRequest('Item name is required');
+  }
+  if (!unitPrice) {
+    throw new BadRequest('Unit price is required');
+  }
+  if (!quantity) {
+    throw new BadRequest('Quantity is required');
+  }
+  if (!discount && discount === undefined) {
+    throw new BadRequest('Discount is required');
   }
 
-  const item = await Item.findOne({
+  const item: Item | null = await Item.findOne({
     where: {
       id: itemId,
       userId: user.id,

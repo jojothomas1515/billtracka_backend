@@ -11,10 +11,9 @@ export async function updateUser(
   const { firstName, lastName, businessName } = req.body;
   const { user } = req;
 
-  user.firstName = firstName;
-  user.lastName = lastName;
-  user.businessName = businessName;
-
+  if (firstName) user.firstName = firstName;
+  if (lastName) user.lastName = lastName;
+  if (businessName) user.businessName = businessName;
   await user.save();
   return res.status(201).json({
     message: 'User updated successfully',

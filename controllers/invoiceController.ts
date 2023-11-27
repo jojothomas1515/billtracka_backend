@@ -47,24 +47,28 @@ export async function createInvoice(
       },
     },
   });
+  console.log(itemsArr);
 
-  const invoice = await Invoice.create({
-    clientName,
-    clientEmail,
-    clientPhone,
-    clientAddress,
-    clientState,
-    clientCity,
-    clientCountry,
-    clientLga,
-    status,
-    items: itemsArr,
-    total,
-    discount,
-    amountPaid,
-    amountDue,
-    ownerId: user.id,
-  });
+  const invoice = (await Invoice.create(
+    {
+      clientName,
+      clientEmail,
+      clientPhone,
+      clientAddress,
+      clientState,
+      clientCity,
+      clientCountry,
+      clientLga,
+      status: status || 'pending',
+      total,
+      discount,
+      amountPaid,
+      amountDue,
+      ownerId: user.id,
+    },
+    { include: [Item] }
+  )) as Invoice & { addItem(i: Item[]): void };
+  invoice.addItem(itemsArr);
 
   const payload = {
     email: invoice.clientEmail,
@@ -113,7 +117,9 @@ export async function updateInvoice(
     amountDue,
   } = req.body;
 
-  const invoice = await Invoice.findOne({ where: { ownerId: user.id, id } });
+  const invoice = (await Invoice.findOne({
+    where: { ownerId: user.id, id },
+  })) as Invoice & { setItem(i: Item[]): void };
 
   if (!invoice) {
     throw new NotFound('Invoice not found');
@@ -141,7 +147,7 @@ export async function updateInvoice(
   invoice.discount = discount;
   invoice.amountPaid = amountPaid;
   invoice.amountDue = amountDue;
-  invoice.items = itemsArr;
+  invoice.setItem(itemsArr);
 
   await invoice.save();
 
@@ -157,7 +163,10 @@ export async function getInvoicesByOwner(
 ): Promise<Response> {
   const { user } = req;
 
-  const invoices = await Invoice.findAll({ where: { ownerId: user.id } });
+  const invoices = await Invoice.findAll({
+    where: { ownerId: user.id },
+    include: [Item],
+  });
 
   return res.json(invoices);
 }
@@ -168,7 +177,7 @@ export async function getInvoiceById(
 ): Promise<Response> {
   const { id } = req.params;
 
-  const invoice = await Invoice.findByPk(id);
+  const invoice = await Invoice.findByPk(id, { include: [Item] });
 
   if (!invoice) {
     throw new NotFound('Invoice Not Found');

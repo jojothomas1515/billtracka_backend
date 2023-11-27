@@ -23,7 +23,7 @@ defaultRouter.get('/status', (req: Request, res: Response) => {
 defaultRouter.use('/auth', authRouter);
 defaultRouter.use('/invoice', invoiceRouter);
 defaultRouter.use('/users', userRouter);
-defaultRouter.use('items', itemRouter);
+defaultRouter.use('/items', itemRouter);
 defaultRouter.use('/tasks', taskRouter);
 
 export default defaultRouter;

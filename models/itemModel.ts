@@ -3,7 +3,6 @@ import {
   Column,
   Model,
   DataType,
-  CreatedAt,
   ForeignKey,
   BelongsTo,
   BelongsToMany,
@@ -13,7 +12,7 @@ import Invoice from './invoiceModel.js';
 import User from './userModel.js';
 import { InvoiceItem } from './relationshipModels.js';
 
-@Table({ tableName: 'items', createdAt: 'created_at', updatedAt: false })
+@Table({ tableName: 'items', timestamps: false })
 class Item extends Model {
   @Column({
     defaultValue: DataType.UUIDV4,
@@ -43,9 +42,6 @@ class Item extends Model {
 
   @BelongsToMany(() => Invoice, () => InvoiceItem)
   declare invoices: Invoice[];
-
-  @CreatedAt
-  declare createdAt: Date;
 }
 
 export default Item;

@@ -9,7 +9,7 @@ import {
 
 import User from './userModel.js';
 
-@Table({ tableName: 'tasks', createdAt: 'created_at', updatedAt: false })
+@Table({ tableName: 'tasks', timestamps: false })
 class Task extends Model {
   @Column({
     defaultValue: DataType.UUIDV4,
