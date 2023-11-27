@@ -1,0 +1,29 @@
+<mjml>
+    <mj-head>
+        <mj-preview>
+            <!-- TODO Add mail preview -->
+            Reminder to pay your invoice
+        </mj-preview>
+    </mj-head>
+    <mj-body>
+        <mj-hero>
+            <mj-text color="blue" font-size="20px" align="center">
+                BillTracka
+            </mj-text>
+        </mj-hero>
+        <mj-section>
+
+            <mj-column>
+                <mj-divider border-color="blue"></mj-divider>
+                <mj-text font-size="20px" color="blue">
+                    Hi {{clientName}},
+                </mj-text>
+                <mj-text font-size="16px">
+                    Please pay your invoice using this <a href="{{paymentLink}}"> link </a>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+
+
+    </mj-body>
+</mjml>

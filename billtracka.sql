@@ -55,6 +55,7 @@ CREATE TABLE "invoices" (
   "total" float,
   "ref_id" varchar(255),
   "owner_id" uuid,
+  "payment_link" varchar(1000),
   "created_at" timestamp DEFAULT (now())
 );
 
