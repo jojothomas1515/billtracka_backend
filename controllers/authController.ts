@@ -4,8 +4,8 @@ import { passwordValidator } from '../util/validator.js';
 import jwt from 'jsonwebtoken';
 import { compare, hash } from 'bcrypt';
 import User from '../models/userModel.js';
-import { sendWelcomeMail } from '../util/mailer.js';
-import { VERIFICATION_URL } from '../config/config.js';
+import { sendWelcomeMail, sendPasswordResetMail } from '../util/mailer.js';
+import { RESETPASSWORD_URL, VERIFICATION_URL } from '../config/config.js';
 
 export async function signUp(req: Request, res: Response): Promise<Response> {
   const { email, phone, password, firstName, lastName } = req.body;
@@ -137,5 +137,69 @@ export async function verifyUser(
   return res.status(200).json({
     message: 'User verified successfully',
     user,
+  });
+}
+
+export async function refreshToken(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    throw new BadRequest('Refresh token not found');
+  }
+  const decoded: jwt.JwtPayload & { id: string } = jwt.verify(
+    refreshToken,
+    process.env.JWTREFRESHSECRET!
+  ) as jwt.JwtPayload & { id: string };
+  const user: User | null = await User.findByPk(decoded.id);
+  if (!user) {
+    throw new Unauthorized('User not found');
+  }
+
+  if (refreshToken !== user.refreshToken) {
+    throw new BadRequest('Invalid refresh token');
+  }
+
+  const token: string = jwt.sign({ id: user.id }, process.env.JWTSECRET!, {
+    expiresIn: '2h',
+  });
+  user.refreshToken = jwt.sign({ id: user.id }, process.env.JWTREFRESHSECRET!, {
+    expiresIn: '7d',
+  });
+  await user.save();
+  return res.status(200).json({
+    message: 'Token refreshed successfully',
+    token,
+    refreshToken: user.refreshToken,
+  });
+}
+
+export async function forgotPassword(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { email } = req.body;
+  if (!email) {
+    throw new BadRequest('Email not found');
+  }
+  const user: User | null = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new Unauthorized('User not found');
+  }
+  const code: string = Math.floor(Math.random() * 9999).toString();
+  user.verificationToken = code;
+  const mailStatus = await sendPasswordResetMail(
+    user.email,
+    `${RESETPASSWORD_URL}?code=${code}&id=${user.id}`,
+    code
+  );
+  if (!mailStatus.response.includes('OK')) {
+    throw new Error('Mail not sent');
+  }
+  await user.save();
+
+  return res.status(200).json({
+    message: 'Password reset mail sent successfully',
   });
 }

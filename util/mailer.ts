@@ -17,3 +17,20 @@ export async function sendWelcomeMail(
     },
   });
 }
+
+export async function sendPasswordResetMail(
+  to: string,
+  resetUrl: string,
+  code: string
+): Promise<SMTPTransport.SentMessageInfo> {
+  return transport.sendMail({
+    from: process.env.SMTPUSER ?? '',
+    to,
+    subject: 'Password Reset',
+    templateName: 'passwordReset',
+    templateData: {
+      resetUrl: resetUrl,
+      code: code,
+    },
+  });
+}
