@@ -13,6 +13,32 @@ export async function pay(req: Request, res: Response): Promise<Response> {
   if (!invoice) {
     throw new NotFound('Invoice not found');
   }
+  if (invoice.status === 'paid') {
+    return res.json({
+      statusCode: 200,
+      message: 'Invoice already paid',
+    });
+  }
+  if (invoice.status === 'cancelled') {
+    return res.json({
+      statusCode: 200,
+      message: 'Invoice already cancelled',
+    });
+  }
+  if (invoice.status === 'draft') {
+    return res.json({
+      statusCode: 200,
+      message: 'Invoice is a draft',
+    });
+  }
+
+  if (invoice.amountDue === 0) {
+    return res.json({
+      statusCode: 200,
+      message: 'Invoice already paid',
+    });
+  }
+
   const payload = {
     email: invoice.clientEmail,
     amount: Number(invoice.amountDue) * 100,
