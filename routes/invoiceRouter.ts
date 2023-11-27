@@ -4,16 +4,23 @@ import {
   getInvoicesByOwner,
   updateInvoice,
   getInvoiceById,
+  deleteInvoiceById,
+  invoicePaidById,
 } from '../controllers/invoiceController.js';
 import { isAuth } from '../middleware/isAuthenticated.js';
 
 const router: Router = Router();
+const authenticated: Router = Router();
 
 // TODO: Add auth middleware
 router.get('/:id([\\w-]+)', getInvoiceById);
-router.use(isAuth);
-router.post('/', createInvoice);
-router.get('/', getInvoicesByOwner);
-router.put('/:id([\\w-]+)', updateInvoice);
+router.put('/:id([\\w-]+)/paid', invoicePaidById);
+authenticated.use(isAuth);
+authenticated.post('/', createInvoice);
+authenticated.get('/', getInvoicesByOwner);
+authenticated.put('/:id([\\w-]+)', updateInvoice);
+authenticated.delete('/:id([\\w-]+)', deleteInvoiceById);
+
+router.use(authenticated);
 
 export default router;

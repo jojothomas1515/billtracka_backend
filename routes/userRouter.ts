@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { updateUser } from '../controllers/userController.js';
+import { updateUser, deleteUser } from '../controllers/userController.js';
 
 const router: Router = Router();
 
 router.put('/', updateUser);
+router.delete('/:id([\\w-]+)', deleteUser);
 
 export default router;

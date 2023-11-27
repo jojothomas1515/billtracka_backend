@@ -132,3 +132,48 @@ export async function getInvoiceById(
     invoice,
   });
 }
+
+export async function invoicePaidById(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { id } = req.params;
+
+  const { amountPaid } = req.body;
+
+  const invoice = await Invoice.findByPk(id);
+
+  if (!invoice) {
+    throw new NotFound('Invoice not found');
+  }
+
+  if (!amountPaid) {
+    throw new BadRequest('amountPaid is required');
+  }
+  invoice.amountPaid = amountPaid;
+  invoice.amountDue = invoice.amountDue - amountPaid;
+  await invoice.save();
+
+  return res.status(201).json({
+    message: 'Payment made successfully',
+    invoice,
+  });
+}
+
+export async function deleteInvoiceById(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { user } = req;
+  const { id } = req.params;
+
+  const invoice = await Invoice.findOne({ where: { ownerId: user.id, id } });
+
+  if (!invoice) {
+    throw new NotFound('Invoice not found');
+  }
+
+  await invoice.destroy();
+
+  return res.sendStatus(204);
+}
