@@ -10,8 +10,10 @@
     "build-dev": "cp ./templates ./dist -r && tsc --watch"
   },
   "dependencies": {
+    "@types/axios": "^0.14.0",
     "@types/nodemailer": "^6.4.14",
     "@types/yaml": "^1.9.7",
+    "axios": "^1.6.2",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

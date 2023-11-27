@@ -8,25 +8,16 @@ import { sendPasswordResetMail, sendWelcomeMail } from '../util/mailer.js';
 import { RESETPASSWORD_URL, VERIFICATION_URL } from '../config/config.js';
 
 export async function signUp(req: Request, res: Response): Promise<Response> {
-  const { email, phone, password, firstName, lastName } = req.body;
+  const { email, password, firstName, lastName } = req.body;
 
-  if (!email && !phone) {
-    throw new Unauthorized('Email or Phone Number is required to signup');
+  if (!email) {
+    throw new Unauthorized('Email or required to signup');
   }
   passwordValidator(password);
 
-  if (email) {
-    const user: User | null = await User.findOne({ where: { email } });
-    if (user) {
-      throw new Unauthorized('Email already exists');
-    }
-  }
-
-  if (phone) {
-    const user: User | null = await User.findOne({ where: { phone } });
-    if (user) {
-      throw new Unauthorized('Phone Number already exists');
-    }
+  const checkUser: User | null = await User.findOne({ where: { email } });
+  if (checkUser) {
+    throw new Unauthorized('Email already exists');
   }
 
   const hashedPassword = await hash(password, 10);
@@ -35,7 +26,6 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
     firstName,
     lastName,
     email,
-    phone,
     hashedPassword,
   });
 
@@ -205,8 +195,7 @@ export async function resetPassword(
   req: Request,
   res: Response
 ): Promise<Response> {
-  const { id } = req.params;
-  const { code, password } = req.body;
+  const { code, password, id } = req.body;
   if (!code) {
     throw new BadRequest('Password reset code is required');
   }
