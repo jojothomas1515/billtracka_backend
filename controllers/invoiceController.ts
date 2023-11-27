@@ -28,7 +28,12 @@ export async function createInvoice(
   if (!clientName) {
     throw new BadRequest('Client name is required');
   }
-
+  if (!amountDue) {
+    throw new BadRequest('Amount due is required');
+  }
+  if (!total) {
+    throw new BadRequest('Total is required');
+  }
   const invoice = await Invoice.create({
     clientName,
     clientEmail,

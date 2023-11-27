@@ -8,6 +8,7 @@ import {
   invoicePaidById,
 } from '../controllers/invoiceController.js';
 import { isAuth } from '../middleware/isAuthenticated.js';
+import { pay } from '../controllers/paymentController.js';
 
 const router: Router = Router();
 const authenticated: Router = Router();
@@ -15,6 +16,7 @@ const authenticated: Router = Router();
 // TODO: Add auth middleware
 router.get('/:id([\\w-]+)', getInvoiceById);
 router.put('/:id([\\w-]+)/paid', invoicePaidById);
+router.get('/:id([\\w-]+)/pay', pay);
 authenticated.use(isAuth);
 authenticated.post('/', createInvoice);
 authenticated.get('/', getInvoicesByOwner);

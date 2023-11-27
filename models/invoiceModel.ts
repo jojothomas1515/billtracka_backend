@@ -81,6 +81,9 @@ class Invoice extends Model {
   @Column({ field: 'owner_id', type: DataType.UUID })
   declare ownerId: string;
 
+  @Column({ field: 'ref_id', type: DataType.STRING })
+  declare refId: string;
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   @CreatedAt
