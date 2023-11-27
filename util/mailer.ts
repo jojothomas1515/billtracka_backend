@@ -34,3 +34,20 @@ export async function sendPasswordResetMail(
     },
   });
 }
+
+export async function sendReminderMail(
+  to: string,
+  paymentLink: string,
+  clientName: string
+): Promise<SMTPTransport.SentMessageInfo> {
+  return transport.sendMail({
+    from: process.env.SMTPUSER ?? '',
+    to,
+    subject: 'Invoice Reminder',
+    templateName: 'reminder',
+    templateData: {
+      paymentLink: paymentLink,
+      clientName: clientName,
+    },
+  });
+}

@@ -93,6 +93,9 @@ class Invoice extends Model {
   @BelongsToMany(() => Item, () => InvoiceItem)
   declare items: Item[];
 
+  @Column({ field: 'payment_link', type: DataType.STRING })
+  declare paymentLink: string;
+
   toJSON() {
     const data = super.toJSON();
     return data;

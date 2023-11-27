@@ -4,7 +4,7 @@ import defaultRouter from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import cors from 'cors';
 import { Express } from 'express';
-
+import './util/mailReminder.js';
 const app: Express = express();
 
 const logger = morgan('dev');

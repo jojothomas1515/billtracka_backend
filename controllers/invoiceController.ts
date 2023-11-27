@@ -84,6 +84,7 @@ export async function createInvoice(
   });
   if (paystackResponse.status === 200) {
     invoice.refId = paystackResponse.data.data.reference;
+    invoice.paymentLink = paystackResponse.data.data.authorization_url;
     await invoice.save();
   }
   return res.status(201).json({
@@ -151,8 +152,27 @@ export async function updateInvoice(
 
   await invoice.save();
 
+  const payload = {
+    email: invoice.clientEmail,
+    amount: Number(invoice.amountDue) * 100,
+  };
+
+  const headers = {
+    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+  };
+  const url = 'https://api.paystack.co/transaction/initialize';
+  const paystackResponse = await axios.post(url, payload, {
+    headers,
+  });
+  if (paystackResponse.status === 200) {
+    invoice.refId = paystackResponse.data.data.reference;
+    invoice.paymentLink = paystackResponse.data.data.authorization_url;
+    await invoice.save();
+  }
   return res.status(201).json({
-    message: 'Invoice updated successfully',
+    message: paystackResponse.data.message,
+    url: paystackResponse.data.data.authorization_url,
+    status: 'success',
     invoice,
   });
 }
