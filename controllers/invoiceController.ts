@@ -4,7 +4,7 @@ import { BadRequest, NotFound } from '../error/errors.js';
 import Item from '../models/itemModel.js';
 import { Op } from 'sequelize';
 import { PAYSTACK_SECRET_KEY } from '../config/config.js';
-import axios from 'axios/index.js';
+import axios from 'axios';
 
 export async function createInvoice(
   req: Request,
