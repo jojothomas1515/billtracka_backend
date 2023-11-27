@@ -4,7 +4,11 @@ import {
   Model,
   DataType,
   CreatedAt,
+  HasMany,
+  BelongsToMany,
 } from 'sequelize-typescript';
+import Item from './itemModel.js';
+import { InvoiceItem } from './relationshipModels.js';
 
 @Table({ tableName: 'invoices', createdAt: 'created_at', updatedAt: false })
 class Invoice extends Model {
@@ -63,9 +67,6 @@ class Invoice extends Model {
   // @Column({ field: 'client_address', type: DataType.STRING })
   // declare clientAddress: string;
 
-  @Column({ field: 'items', type: DataType.JSON })
-  declare items: string;
-
   @Column({ field: 'total', type: DataType.FLOAT })
   declare total: number;
 
@@ -88,6 +89,9 @@ class Invoice extends Model {
   // @ts-ignore
   @CreatedAt
   declare createdAt: Date;
+
+  @BelongsToMany(() => Item, () => InvoiceItem)
+  declare items: Item[];
 
   toJSON() {
     const data = super.toJSON();

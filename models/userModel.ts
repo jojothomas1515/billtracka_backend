@@ -4,7 +4,9 @@ import {
   Model,
   DataType,
   CreatedAt,
+  HasMany,
 } from 'sequelize-typescript';
+import Task from './taskModel.js';
 
 @Table({ tableName: 'users', createdAt: 'created_at', updatedAt: false })
 class User extends Model {
@@ -45,6 +47,9 @@ class User extends Model {
 
   @Column({ type: DataType.STRING, field: 'business_name' })
   declare businessName: string | null;
+
+  @HasMany(() => Task, 'userId')
+  declare tasks: Task[];
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

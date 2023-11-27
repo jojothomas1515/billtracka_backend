@@ -1,6 +1,10 @@
 import { Response, Request } from 'express';
 import Invoice from '../models/invoiceModel.js';
 import { BadRequest, NotFound } from '../error/errors.js';
+import Item from '../models/itemModel.js';
+import { Op } from 'sequelize';
+import { PAYSTACK_SECRET_KEY } from '../config/config.js';
+import axios from 'axios/index.js';
 
 export async function createInvoice(
   req: Request,
@@ -34,6 +38,16 @@ export async function createInvoice(
   if (!total) {
     throw new BadRequest('Total is required');
   }
+
+  const itemsArr = await Item.findAll({
+    where: {
+      userId: user.id,
+      id: {
+        [Op.in]: items,
+      },
+    },
+  });
+
   const invoice = await Invoice.create({
     clientName,
     clientEmail,
@@ -44,7 +58,7 @@ export async function createInvoice(
     clientCountry,
     clientLga,
     status,
-    items,
+    items: itemsArr,
     total,
     discount,
     amountPaid,
@@ -52,7 +66,25 @@ export async function createInvoice(
     ownerId: user.id,
   });
 
+  const payload = {
+    email: invoice.clientEmail,
+    amount: Number(invoice.amountDue) * 100,
+  };
+
+  const headers = {
+    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+  };
+  const url = 'https://api.paystack.co/transaction/initialize';
+  const paystackResponse = await axios.post(url, payload, {
+    headers,
+  });
+  if (paystackResponse.status === 200) {
+    invoice.refId = paystackResponse.data.data.reference;
+    await invoice.save();
+  }
   return res.status(201).json({
+    message: paystackResponse.data.message,
+    url: paystackResponse.data.data.authorization_url,
     status: 'success',
     invoice,
   });
@@ -87,6 +119,15 @@ export async function updateInvoice(
     throw new NotFound('Invoice not found');
   }
 
+  const itemsArr = await Item.findAll({
+    where: {
+      userId: user.id,
+      id: {
+        [Op.in]: items,
+      },
+    },
+  });
+
   invoice.clientName = clientName;
   invoice.clientEmail = clientEmail;
   invoice.clientPhone = clientPhone;
@@ -96,11 +137,11 @@ export async function updateInvoice(
   invoice.clientCountry = clientCountry;
   invoice.clientLga = clientLga;
   invoice.status = status;
-  invoice.items = items;
   invoice.total = total;
   invoice.discount = discount;
   invoice.amountPaid = amountPaid;
   invoice.amountDue = amountDue;
+  invoice.items = itemsArr;
 
   await invoice.save();
 

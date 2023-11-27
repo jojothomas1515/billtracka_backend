@@ -5,6 +5,8 @@ import userRouter from './userRouter.js';
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
 import yaml from 'yaml';
+import itemRouter from './itemRouter.js';
+import taskRouter from './taskRouter.js';
 const defaultRouter: Router = Router();
 
 const file = fs.readFileSync('./docs/apidoc.yaml', 'utf-8');
@@ -21,5 +23,7 @@ defaultRouter.get('/status', (req: Request, res: Response) => {
 defaultRouter.use('/auth', authRouter);
 defaultRouter.use('/invoice', invoiceRouter);
 defaultRouter.use('/users', userRouter);
+defaultRouter.use('items', itemRouter);
+defaultRouter.use('/tasks', taskRouter);
 
 export default defaultRouter;
