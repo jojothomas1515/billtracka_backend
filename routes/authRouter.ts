@@ -4,13 +4,13 @@ import {
   refreshToken,
   resetPassword,
   signIn,
-  signUp,
+  signUpWithEmail,
   verifyUser,
 } from '../controllers/authController.js';
 
 const router: Router = Router();
 
-router.post('/signup', signUp);
+router.post('/signup', signUpWithEmail);
 router.post('/login', signIn);
 router.put('/verify', verifyUser);
 router.post('/forgot-password', forgotPassword);

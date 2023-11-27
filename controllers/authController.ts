@@ -7,7 +7,10 @@ import User from '../models/userModel.js';
 import { sendPasswordResetMail, sendWelcomeMail } from '../util/mailer.js';
 import { RESETPASSWORD_URL, VERIFICATION_URL } from '../config/config.js';
 
-export async function signUp(req: Request, res: Response): Promise<Response> {
+export async function signUpWithEmail(
+  req: Request,
+  res: Response
+): Promise<Response> {
   const { email, password, firstName, lastName } = req.body;
 
   if (!email) {
@@ -49,7 +52,51 @@ export async function signUp(req: Request, res: Response): Promise<Response> {
     user,
   });
 }
+export async function signUpWithPhone(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { phone, password, firstName, lastName } = req.body;
 
+  if (!phone) {
+    throw new Unauthorized('Email or required to signup');
+  }
+  passwordValidator(password);
+
+  const checkUser: User | null = await User.findOne({ where: { phone } });
+  if (checkUser) {
+    throw new Unauthorized('Email already exists');
+  }
+
+  const hashedPassword = await hash(password, 10);
+
+  const user: User = await User.create({
+    firstName,
+    lastName,
+    phone,
+    hashedPassword,
+  });
+
+  if (!user) {
+    throw new Unauthorized('User not created');
+  }
+  const code: string = Math.floor(Math.random() * 9999).toString();
+  user.verificationToken = code;
+  await user.save();
+  const mailStatus = await sendWelcomeMail(
+    user.phone,
+    `${VERIFICATION_URL}?code=${code}&id=${user.id}`,
+    code
+  );
+  if (!mailStatus.response.includes('OK')) {
+    await user.destroy();
+    throw new Unauthorized('User not created');
+  }
+  return res.status(201).json({
+    message: 'User created successfully',
+    user,
+  });
+}
 export async function signIn(req: Request, res: Response): Promise<Response> {
   const { email, phone, password } = req.body;
 
@@ -178,7 +225,7 @@ export async function forgotPassword(
   user.verificationToken = code;
   const mailStatus = await sendPasswordResetMail(
     user.email,
-    `${RESETPASSWORD_URL}?code=${code}&id=${user.id}`,
+    `${RESETPASSWORD_URL}?code=${code}&email=${user.email}`,
     code
   );
   if (!mailStatus.response.includes('OK')) {
@@ -195,14 +242,14 @@ export async function resetPassword(
   req: Request,
   res: Response
 ): Promise<Response> {
-  const { code, password, id } = req.body;
+  const { code, password, email } = req.body;
   if (!code) {
     throw new BadRequest('Password reset code is required');
   }
   if (!password) {
     throw new BadRequest('Password is required');
   }
-  const user: User | null = await User.findByPk(id);
+  const user: User | null = await User.findOne({ where: { email } });
   if (!user) {
     throw new Unauthorized('User not found');
   }
