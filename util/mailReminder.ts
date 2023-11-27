@@ -15,7 +15,8 @@ async function sendAllReminder() {
     const clientEmail = invoice.clientEmail;
     const clientName = invoice.clientName;
     await sendReminderMail(clientEmail, paymentLink, clientName);
+    console.log('Reminder sent to ' + clientEmail);
   }
 }
 
-export default cron.schedule('*, *, */12, *,*, *', sendAllReminder);
+export default cron.schedule('* * */12 * * *', sendAllReminder);
