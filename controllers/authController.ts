@@ -4,7 +4,7 @@ import { passwordValidator } from '../util/validator.js';
 import jwt from 'jsonwebtoken';
 import { compare, hash } from 'bcrypt';
 import User from '../models/userModel.js';
-import { sendWelcomeMail, sendPasswordResetMail } from '../util/mailer.js';
+import { sendPasswordResetMail, sendWelcomeMail } from '../util/mailer.js';
 import { RESETPASSWORD_URL, VERIFICATION_URL } from '../config/config.js';
 
 export async function signUp(req: Request, res: Response): Promise<Response> {
@@ -119,10 +119,7 @@ export async function verifyUser(
   if (!id) {
     throw new BadRequest('User not found');
   }
-  // const decoded: jwt.JwtPayload & { id: string } = jwt.verify(
-  //   token as string,
-  //   process.env.JWTSECRET!
-  // ) as jwt.JwtPayload & { id: string };
+
   const user: User | null = await User.findByPk(id as string);
   if (!user) {
     throw new Unauthorized('User not found');
@@ -201,5 +198,35 @@ export async function forgotPassword(
 
   return res.status(200).json({
     message: 'Password reset mail sent successfully',
+  });
+}
+
+export async function resetPassword(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { id } = req.params;
+  const { code, password } = req.body;
+  if (!code) {
+    throw new BadRequest('Password reset code is required');
+  }
+  if (!password) {
+    throw new BadRequest('Password is required');
+  }
+  const user: User | null = await User.findByPk(id);
+  if (!user) {
+    throw new Unauthorized('User not found');
+  }
+
+  if (code !== user.verificationToken) {
+    throw new Unauthorized('Code is incorrect or not longer valid');
+  }
+  passwordValidator(password);
+  user.hashedPassword = await hash(password, 10);
+  user.verificationToken = null;
+  await user.save();
+  return res.status(200).json({
+    message: 'Password reset successfully',
+    user,
   });
 }

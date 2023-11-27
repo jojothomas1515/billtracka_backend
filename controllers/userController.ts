@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import User from '../models/userModel.js';
-import { NotFound, Unauthorized } from '../error/errors.js';
+import { BadRequest, NotFound, Unauthorized } from '../error/errors.js';
+import { compare, hash } from 'bcrypt';
+import { passwordValidator } from '../util/validator.js';
 
 export async function updateUser(
   req: Request,
@@ -40,4 +42,41 @@ export async function deleteUser(
   await uuser.destroy();
 
   return res.sendStatus(204);
+}
+
+export async function changePassword(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { user } = req;
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword) {
+    throw new BadRequest('Old password is required');
+  }
+  if (!newPassword) {
+    throw new BadRequest('New password is required');
+  }
+
+  if (oldPassword === newPassword) {
+    throw new BadRequest('Old password and new password cannot be the same');
+  }
+
+  if (!user) {
+    throw new Unauthorized('User not found');
+  }
+
+  const isMatch: boolean = await compare(oldPassword, user.hashedPassword);
+
+  if (!isMatch) {
+    throw new Unauthorized('Old password is incorrect');
+  }
+
+  passwordValidator(newPassword);
+
+  user.hashedPassword = await hash(newPassword, 10);
+  await user.save();
+  return res.status(200).json({
+    message: 'Password changed successfully',
+    user,
+  });
 }
