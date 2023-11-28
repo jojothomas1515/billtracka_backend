@@ -7,25 +7,26 @@ import crypto from 'crypto';
 
 export async function pay(req: Request, res: Response): Promise<Response> {
   const { id } = req.params;
+  const { amount } = req.body;
 
   const invoice = await Invoice.findByPk(id);
 
   if (!invoice) {
     throw new NotFound('Invoice not found');
   }
-  if (invoice.status === 'paid') {
+  if (invoice.status === 'PAID') {
     return res.json({
       statusCode: 200,
       message: 'Invoice already paid',
     });
   }
-  if (invoice.status === 'cancelled') {
+  if (invoice.status === 'CANCELLED') {
     return res.json({
       statusCode: 200,
       message: 'Invoice already cancelled',
     });
   }
-  if (invoice.status === 'draft') {
+  if (invoice.status === 'DRAFT') {
     return res.json({
       statusCode: 200,
       message: 'Invoice is a draft',
@@ -39,9 +40,12 @@ export async function pay(req: Request, res: Response): Promise<Response> {
     });
   }
 
+  let price = amount ? Number(amount) * 100 : Number(invoice.amountDue) * 100;
+
+  if (price > invoice.amountDue) price = invoice.amountDue;
   const payload = {
     email: invoice.clientEmail,
-    amount: Number(invoice.amountDue) * 100,
+    amount: price,
   };
 
   const headers = {
@@ -53,6 +57,7 @@ export async function pay(req: Request, res: Response): Promise<Response> {
   });
   if (paystackResponse.status === 200) {
     invoice.refId = paystackResponse.data.data.reference;
+    invoice.paymentLink = paystackResponse.data.data.authorization_url;
     await invoice.save();
     return res.json({
       statusCode: paystackResponse.status,
@@ -94,7 +99,9 @@ export async function verifyPayment(
 
       invoice.amountDue = invoice.amountDue - chargeAmount;
       invoice.amountPaid = invoice.amountPaid + chargeAmount;
-      invoice.status = 'PAID';
+
+      if (invoice.amountPaid === invoice.total && invoice.amountDue === 0)
+        invoice.status = 'PAID';
       await invoice.save();
     }
 
