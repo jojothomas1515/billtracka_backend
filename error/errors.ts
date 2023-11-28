@@ -2,6 +2,7 @@ export class CustomError extends Error {
   status: number;
   constructor(message: string, status: number) {
     super(message);
+    console.log(this.message);
     this.status = status;
   }
 }
