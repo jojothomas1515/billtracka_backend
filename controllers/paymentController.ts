@@ -7,13 +7,25 @@ import crypto from 'crypto';
 
 export async function pay(req: Request, res: Response): Promise<Response> {
   const { id } = req.params;
-  const { amount } = req.body;
 
   const invoice = await Invoice.findByPk(id);
-
   if (!invoice) {
     throw new NotFound('Invoice not found');
   }
+
+  let price: number;
+
+  try {
+    const { amount } = req.body;
+    price = amount ? Number(amount) * 100 : Number(invoice.amountDue) * 100;
+    console.log(price);
+    console.log(amount);
+    if (price > invoice.amountDue * 100) price = invoice.amountDue * 100;
+  } catch (e) {
+    console.log(e);
+    price = invoice.amountDue * 100;
+  }
+
   if (invoice.status === 'PAID') {
     return res.json({
       statusCode: 200,
@@ -40,9 +52,6 @@ export async function pay(req: Request, res: Response): Promise<Response> {
     });
   }
 
-  let price = amount ? Number(amount) * 100 : Number(invoice.amountDue) * 100;
-
-  if (price > invoice.amountDue) price = invoice.amountDue;
   const payload = {
     email: invoice.clientEmail,
     amount: price,
