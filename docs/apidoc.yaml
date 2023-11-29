@@ -5,11 +5,13 @@ info:
     # Bill Tracka
       Api to issue and handle invoices
   version: 1.0.0
+
 servers:
   - url: 'https://billtracka.jojothomas.tech/api'
     description: Online server
   - url: 'http://localhost:5000/api'
     description: Local server
+
 
 tags:
   - name: Authentication
@@ -23,7 +25,7 @@ paths:
         - Authentication
       description: "create a user now"
       requestBody:
-        $ref: '#/components/requestBodies/CreateUser'
+        $ref: './user.yaml#/components/requestBodies/CreateUser'
       responses:
         201:
           description: "Successfully creates user"
@@ -58,125 +60,32 @@ paths:
             type: string
       responses:
         200:
-          $ref: '#/components/responses/SingleInvoice'
+          $ref: './invoice.yaml#/components/responses/singleInvoice'
+
+  /invoice:
+    get:
+      tags:
+        - Invoice
+      description: "Get all invoice associated with logged in user"
+      responses:
+        200:
+          $ref: "./invoice.yaml#/components/responses/multipleInvoices"
+    post:
+
+      tags:
+        - Invoice
+      requestBody:
+        $ref: "./invoice.yaml#/components/requestBodies/createInvoice"
+      responses:
+        201:
+          $ref: "./invoice.yaml#/components/responses/singleInvoice"
+
 
 
 
 components:
-  schemas:
-    User:
-      type: object
-      properties:
-        email:
-          type: string
-          example: "example@gmail.com"
-        password:
-          type: string
-          example: "password123"
-        firstName:
-          type: string
-          example: "John"
-        lastName:
-          type: string
-          example: "Doe"
-        businessName:
-          type: string
-          example: "BillTracka Enterprises"
-      xml:
-        name: "user"
-
-    invoice:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "f7b1126d-e0a2-45b1-a197-f3904f847199"
-        invoiceNumber:
-          type: string
-          example: "12345678"
-        issueDate:
-          type: string
-          example: "2021-11-27T21:03:49.294Z"
-        dueDate:
-          type: string
-          example: "2021-11-27T21:03:49.294Z"
-        notes:
-          type: string
-          example: "This is a sample invoice"
-        paymentMode:
-          type: string
-          example: "Bank Transfer"
-        clientName:
-          type: string
-          example: "Water and beans"
-        clientEmail:
-          type: string
-          example: "example@gmail.com"
-        clientPhone:
-          type: string
-          example: "0901234567"
-        clientAddress:
-          type: string
-          example: "ya nuts"
-        clientState:
-          type: string
-          example: "Kyoto"
-        clientCity:
-          type: string
-          example: "Jaku"
-        clientCountry:
-          type: string
-          example: "Japan"
-        clientLga:
-          type: string
-          example: "shigaraki"
-        status:
-          type: string
-          example: "UNPAID"
-        total:
-          type: number
-          example: 36000
-        discount:
-          type: number
-          example: 0
-        amountPaid:
-          type: number
-          example: 26000
-        amountDue:
-          type: number
-          example: 49000
-        ownerId:
-          type: string
-          example: "359d4824-2adc-4b52-a5e0-d6620a90dad0"
-        refId:
-          type: string
-          example: "exfbfp1zwn"
-        paymentLink:
-          type: string
-          example: "https://billtracka.jojothomas.tech/api/invoice/exfbfp1zwn/pay"
-        created_at:
-          type: string
-          example: "2021-11-27T21:03:49.294Z"
-        items:
-          type: array
-
-
-
-  requestBodies:
-    CreateUser:
-      required: true
-      description: "User to be created"
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/User'
-
-  responses:
-    SingleInvoice:
-      description: "Successfully gets Invoice"
-      content:
-        application/json:
-          schema:
-            properties:
-              invoice:
-                $ref: '#/components/schemas/invoice'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

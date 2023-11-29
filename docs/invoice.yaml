@@ -1,0 +1,118 @@
+openapi: 3.0.3
+components:
+  schemas:
+    reqInvoice:
+      type: object
+      properties:
+        issueDate:
+          type: string
+          example: "2021-11-27T21:03:49.294Z"
+        dueDate:
+          type: string
+          example: "2021-11-27T21:03:49.294Z"
+        notes:
+          type: string
+          example: "This is a sample invoice"
+        paymentMode:
+          type: string
+          example: "Bank Transfer"
+        clientName:
+          type: string
+          example: "Water and beans"
+        clientEmail:
+          type: string
+          example: "example@gmail.com"
+        clientPhone:
+          type: string
+          example: "0901234567"
+        clientAddress:
+          type: string
+          example: "ya nuts"
+        clientState:
+          type: string
+          example: "Kyoto"
+        clientCity:
+          type: string
+          example: "Jaku"
+        clientCountry:
+          type: string
+          example: "Japan"
+        clientLga:
+          type: string
+          example: "shigaraki"
+        status:
+          type: string
+          example: "UNPAID"
+        total:
+          type: number
+          example: 36000
+        discount:
+          type: number
+          example: 0
+        amountPaid:
+          type: number
+          example: 26000
+        amountDue:
+          type: number
+          example: 49000
+        ownerId:
+          type: string
+          example: "359d4824-2adc-4b52-a5e0-d6620a90dad0"
+        refId:
+          type: string
+          example: "exfbfp1zwn"
+        paymentLink:
+          type: string
+          example: "https://billtracka.jojothomas.tech/api/invoice/exfbfp1zwn/pay"
+        created_at:
+          type: string
+          example: "2021-11-27T21:03:49.294Z"
+        items:
+          type: array
+
+    invoice:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "f7b1126d-e0a2-45b1-a197-f3904f847199"
+            invoiceNumber:
+              type: string
+              example: "12345678"
+
+
+        - $ref: "#/components/schemas/reqInvoice"
+
+
+  requestBodies:
+
+    createInvoice:
+
+      description: "Create New invoice associated with logged in user business"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/reqInvoice"
+
+  responses:
+
+    singleInvoice:
+      description: "invoice data with all items associated with it."
+      content:
+        application/json:
+          schema:
+            properties:
+              invoice:
+                $ref: "#/components/schemas/invoice"
+
+
+    multipleInvoices:
+      description: "Array of invoice associated with the logged in user"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/invoice"
+
