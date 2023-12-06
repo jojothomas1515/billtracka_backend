@@ -41,11 +41,10 @@ export async function createInvoice(
     where: {
       userId: user.id,
       id: {
-        [Op.in]: items,
+        [Op.in]: items.map((item: { id: string }) => item.id),
       },
     },
   });
-  console.log(itemsArr);
 
   const invoice = (await Invoice.create(
     {
@@ -64,9 +63,24 @@ export async function createInvoice(
       amountDue,
       ownerId: user.id,
     },
-    { include: [Item] }
-  )) as Invoice & { addItem(i: Item[]): void };
-  invoice.addItem(itemsArr);
+    {
+      include: [
+        {
+          model: Item,
+          as: 'items',
+        },
+      ],
+    }
+  )) as Invoice & { addItem(i: Item, through?: object): Promise<void> };
+  for (const item of itemsArr) {
+    await invoice.addItem(item, {
+      through: {
+        quantity: items.filter(
+          (item_: { id: string; quantity: number }) => item.id === item_.id
+        )[0].quantity,
+      },
+    });
+  }
 
   //  const payload = {
   //    email: invoice.clientEmail,
@@ -88,7 +102,7 @@ export async function createInvoice(
   await invoice.save();
 
   return res.status(201).json({
-    status: 'success',
+    status: 201,
     invoice,
   });
 }
@@ -170,7 +184,7 @@ export async function updateInvoice(
   return res.status(201).json({
     //    message: paystackResponse.data.message,
     //    url: paystackResponse.data.data.authorization_url,
-    status: 'success',
+    status: 201,
     invoice,
   });
 }
@@ -202,6 +216,7 @@ export async function getInvoiceById(
   }
 
   return res.json({
+    status: 200,
     invoice,
   });
 }

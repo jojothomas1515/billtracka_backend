@@ -18,4 +18,14 @@ export class InvoiceItem extends Model {
   @ForeignKey(() => Item)
   @Column({ field: 'item_id', type: DataType.UUID })
   declare itemId: string;
+
+  @Column({ field: 'quantity', type: DataType.INTEGER })
+  declare quantity: number;
+
+  toJSON() {
+    const res = super.toJSON();
+    delete res.invoiceId;
+    delete res.itemId;
+    return res;
+  }
 }

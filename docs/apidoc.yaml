@@ -19,6 +19,8 @@ tags:
     description: "Every thing related to signup, login, and verifying user"
   - name: Invoice
     description: "Every thing related to invoices"
+  - name: Item
+    description: "Every thing related to items"
 
 
 # Endpoints
@@ -60,10 +62,15 @@ paths:
           description: verification code gotten by emaail
           required: true
           in: query
+          schema:
+            type: string
         - name: id
           description: user id to verify
           required: true
           in: query
+          schema:
+            type: string
+
 
       responses:
         200:
@@ -239,7 +246,7 @@ paths:
         $ref: "#/components/requestBodies/createInvoice"
       responses:
         201:
-          $ref: "#/components/responses/singleInvoice"
+          $ref: "#/components/responses/createSingleInvoice"
 
   /invoice/{invoice_id}:
     get:
@@ -251,11 +258,209 @@ paths:
           in: path
           required: true
           description: "The invoice id"
-          schema:
-            type: string
+
       responses:
         200:
-          $ref: '#/components/responses/singleInvoice'
+          $ref: '#/components/responses/getSingleInvoice'
+
+        404:
+          description: "Invoice not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+              examples:
+                invoice not found:
+                  value:
+                    status: 404
+                    message: "Invoice not found"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Invoice
+      description: "Update a single invoice"
+      parameters:
+        - name: invoice_id
+          in: path
+          required: true
+          description: "The invoice id"
+      requestBody:
+        $ref: "#/components/requestBodies/createInvoice"
+
+      responses:
+        201:
+          $ref: '#/components/responses/createSingleItem'
+
+        404:
+          description: "Invoice not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+              examples:
+                invoice not found:
+                  value:
+                    status: 404
+                    message: "Invoice not found"
+    delete:
+
+      tags:
+        - Invoice
+      security:
+        - bearerAuth: [ ]
+      description: "Delete a single invoice"
+      parameters:
+        - name: invoice_id
+          in: path
+          required: true
+          description: "The invoice id"
+      responses:
+        204:
+          description: Invoice deleted successfully
+
+    #item routes starts here
+  /item:
+    get:
+      tags:
+        - Item
+      security:
+        - bearerAuth: [ ]
+      description: "Get all items associated with logged in user"
+      responses:
+        200:
+          $ref: "#/components/responses/multipleItem"
+    post:
+      tags:
+        - Item
+      security:
+        - bearerAuth: [ ]
+      description: "Create a new item"
+
+      requestBody:
+        $ref: "#/components/requestBodies/createItem"
+      responses:
+        201:
+          description: "Item created successfully"
+          $ref: "#/components/responses/createSingleItem"
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+              examples:
+                missing item name:
+                  value:
+                    status: 400
+                    message: "Item name is required"
+                missing unit price:
+                  value:
+                    status: 400
+                    message: "Unit price is required"
+                missing quantity:
+                  value:
+                    status: 400
+                    message: "Quantity is required"
+
+  /item/{item_id}:
+    get:
+      tags:
+        - Item
+      description: "Get a single item"
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: "The item id"
+          schema:
+          type: string
+      responses:
+        200:
+          $ref: '#/components/responses/getSingleItem'
+        404:
+          description: "Item not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+              examples:
+                item not found:
+                  value:
+                    status: 404
+                    message: "Item not found"
+
+    put:
+      tags:
+        - Item
+      description: "Update a single item"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: "The item id"
+          schema:
+          type: string
+      requestBody:
+        $ref: "#/components/requestBodies/createItem"
+      responses:
+        200:
+          $ref: '#/components/responses/getSingleItem'
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+              examples:
+                missing item name:
+                  value:
+                    status: 400
+                    message: "Item name is required"
+                missing unit price:
+                  value:
+                    status: 400
+                    message: "Unit price is required"
+                missing quantity:
+                  value:
+                    status: 400
+                    message: "Quantity is required"
+
+    delete:
+      tags:
+        - Item
+      description: "Delete a single item"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: "The item id"
+          schema:
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              example:
+                status: 200
+                message: 'Item deleted successfully'
+        404:
+          description: "Item not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+              examples:
+                item not found:
+                  value:
+                    status: 404
+                    message: "Item not found"
+
+
 
 
 
@@ -345,7 +550,7 @@ components:
           type: string
           example: "refreshToken"
 
-    reqInvoice:
+    basicInvoice:
       type: object
       properties:
         issueDate:
@@ -386,7 +591,11 @@ components:
           example: "shigaraki"
         status:
           type: string
-          example: "UNPAID"
+          default: "UNPAID"
+          enum:
+            - UNPAID
+            - PAID
+            - PARTIALLY_PAID
         total:
           type: number
           example: 36000
@@ -399,20 +608,9 @@ components:
         amountDue:
           type: number
           example: 49000
-        ownerId:
-          type: string
-          example: "359d4824-2adc-4b52-a5e0-d6620a90dad0"
-        refId:
-          type: string
-          example: "exfbfp1zwn"
-        paymentLink:
-          type: string
-          example: "https://billtracka.jojothomas.tech/api/invoice/exfbfp1zwn/pay"
-        created_at:
-          type: string
-          example: "2021-11-27T21:03:49.294Z"
-        items:
-          type: array
+
+
+
 
     invoice:
       allOf:
@@ -426,7 +624,104 @@ components:
               example: "12345678"
 
 
-        - $ref: "#/components/schemas/reqInvoice"
+        - $ref: "#/components/schemas/basicInvoice"
+
+    reqInvoice:
+      allOf:
+        - $ref: '#/components/schemas/basicInvoice'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 'example-uuid4'
+                  quantity:
+                    type: number
+                    example: 10
+    resInvoice:
+      allOf:
+        - $ref: '#/components/schemas/basicInvoice'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/resItem'
+                  - type: object
+                    properties:
+                      ownerId:
+                        type: string
+                        example: "359d4824-2adc-4b52-a5e0-d6620a90dad0"
+                      refId:
+                        type: string
+                        example: "exfbfp1zwn"
+                      paymentLink:
+                        type: string
+                        example: "https://billtracka.jojothomas.tech/api/invoice/exfbfp1zwn/pay"
+                      created_at:
+                        type: string
+                        example: "2021-11-27T21:03:49.294Z"
+                      invoiceItem:
+                        $ref: '#/components/schemas/invoiceItem'
+
+
+
+    basicItem:
+      type: object
+
+      properties:
+
+        itemName:
+          type: string
+          example: 'example item'
+        unitPrice:
+          type: number
+          example: 1000
+        quantity:
+          type: number
+          example: 10
+        discount:
+          type: number
+          example: 0
+
+    item:
+      type: object
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: 'example-uuid4'
+        - $ref: '#/components/schemas/basicItem'
+
+    resItem:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/item'
+        - type: object
+          properties:
+            userId:
+              type: string
+              example: 'example-uuid4'
+
+    invoiceItem:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        itemId:
+          type: string
+        quantity:
+          type: number
+          example: 10
+
+
+
 
     genericResponse:
       type: object
@@ -465,6 +760,14 @@ components:
             $ref: "#/components/schemas/reqInvoice"
 
 
+    # item
+
+    createItem:
+      description: "Create New item associated with logged in user business"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/basicItem"
 
   responses:
     loginResponse:
@@ -489,14 +792,29 @@ components:
                 example: "user verified successfully"
 
 
-    singleInvoice:
+    getSingleInvoice:
       description: "invoice data with all items associated with it."
       content:
         application/json:
           schema:
             properties:
+              status:
+                type: integer
+                example: 200
               invoice:
-                $ref: "#/components/schemas/invoice"
+                $ref: "#/components/schemas/resInvoice"
+
+    createSingleInvoice:
+      description: "invoice data with all items associated with it."
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 201
+              invoice:
+                $ref: "#/components/schemas/resInvoice"
 
 
     multipleInvoices:
@@ -506,7 +824,41 @@ components:
           schema:
             type: array
             items:
-              $ref: "#/components/schemas/invoice"
+              $ref: "#/components/schemas/resInvoice"
+
+    createSingleItem:
+      description: "item data"
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 201
+              data:
+                $ref: "#/components/schemas/item"
+    getSingleItem:
+      description: "item data"
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 200
+              data:
+                $ref: "#/components/schemas/item"
+
+    multipleItem:
+      description: "Array of items associated with the logged in user"
+      content:
+        application/json:
+          schema:
+            properties:
+              type: array
+              items:
+                $ref: "#/components/schemas/resItem"
+
 
 
 

@@ -71,6 +71,7 @@ CREATE TABLE "items" (
 CREATE TABLE "invoice_items" (
   "invoice_id" uuid,
   "item_id" uuid,
+  "quantity" int NOT NULL,
   PRIMARY KEY ("invoice_id", "item_id")
 );
 

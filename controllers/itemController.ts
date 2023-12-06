@@ -31,7 +31,7 @@ export const createItem = async (
   });
 
   return res.status(201).json({
-    status: 'success',
+    status: 201,
     data: item,
   });
 };
@@ -49,7 +49,7 @@ export const getItems = async (
   });
 
   return res.status(200).json({
-    status: 'success',
+    status: 200,
     data: items,
   });
 };
@@ -74,7 +74,7 @@ export const getItem = async (
   }
 
   return res.status(200).json({
-    status: 'success',
+    status: 200,
     data: item,
   });
 };
@@ -120,8 +120,8 @@ export const updateItem = async (
 
   await item.save();
 
-  return res.status(200).json({
-    status: 'success',
+  return res.status(201).json({
+    status: 201,
     data: item,
   });
 };
@@ -148,7 +148,7 @@ export const deleteItem = async (
   await item.destroy();
 
   return res.status(200).json({
-    status: 'success',
+    status: 200,
     message: 'Item deleted successfully',
   });
 };
