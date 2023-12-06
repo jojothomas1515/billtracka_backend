@@ -17,6 +17,8 @@ servers:
 tags:
   - name: Authentication
     description: "Every thing related to signup, login, and verifying user"
+  - name: User
+    description: "Every thing related to users"
   - name: Invoice
     description: "Every thing related to invoices"
   - name: Item
@@ -460,9 +462,113 @@ paths:
                     status: 404
                     message: "Item not found"
 
-
-
-
+# TODO: add user routes
+#  # user routes starts here
+#  /users/{id}:
+#    get:
+#      tags:
+#        - User
+#      description: "Get a single user"
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: "The user id"
+#          schema:
+#          type: string
+#      responses:
+#        200:
+#          description: "User data"
+#          content:
+#            application/json:
+#              schema:
+#                properties:
+#                  status:
+#                    type: integer
+#                    example: 200
+#                  user:
+#                    $ref: "#/components/schemas/User"
+#        404:
+#          description: "User not found"
+#          content:
+#            application/json:
+#              schema:
+#                $ref: "#/components/schemas/genericResponse"
+#              examples:
+#                user not found:
+#                  value:
+#                    status: 404
+#                    message: "User not found"
+#
+#    put:
+#      tags:
+#        - User
+#      description: "Update a single user"
+#      security:
+#        - bearerAuth: [ ]
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: "The user id"
+#          schema:
+#          type: string
+#      requestBody:
+#        $ref: "#/components/requestBodies/CreateUser"
+#      responses:
+#        200:
+#          description: "User data"
+#          content:
+#            application/json:
+#              schema:
+#                properties:
+#                  status:
+#                    type: integer
+#                    example: 200
+#                  user:
+#                    $ref: "#/components/schemas/User"
+#        404:
+#          description: "User not found"
+#          content:
+#            application/json:
+#              schema:
+#                $ref: "#/components/schemas/genericResponse"
+#              examples:
+#                user not found:
+#                  value:
+#                    status: 404
+#                    message: "User not found"
+#
+#    delete:
+#      tags:
+#        - User
+#      description: "Delete a single user"
+#      security:
+#        - bearerAuth: [ ]
+#      parameters:
+#        - name: id
+#          in: path
+#          required: true
+#          description: "The user id"
+#
+#      responses:
+#        200:
+#          content:
+#            application/json:
+#              example:
+#                status: 200
+#                message: 'User deleted successfully'
+#        404:
+#          description: "User not found"
+#          content:
+#            application/json:
+#              schema:
+#                $ref: "#/components/schemas/genericResponse"
+#              examples:
+#                user not found:
+#                  value:
+#                    status: 404
+#                    message: "User not found"
 
 components:
   securitySchemes:
