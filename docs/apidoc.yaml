@@ -1,10 +1,11 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Bill Tracka Api Documention
   description: |
     # Bill Tracka
       Api to issue and handle invoices
   version: 1.0.0
+
 
 servers:
   - url: 'https://billtracka.jojothomas.tech/api'
@@ -18,14 +19,19 @@ tags:
     description: "Every thing related to signup, login, and verifying user"
   - name: Invoice
     description: "Every thing related to invoices"
+
+
+# Endpoints
 paths:
+
+  #  auth routes starts here
   /auth/signup:
     post:
       tags:
         - Authentication
       description: "create a user now"
       requestBody:
-        $ref: './user.yaml#/components/requestBodies/CreateUser'
+        $ref: '#/components/requestBodies/CreateUser'
       responses:
         201:
           description: "Successfully creates user"
@@ -45,7 +51,196 @@ paths:
                     type: string
                     example: "Email already exists"
 
+  /auth/verify:
+    put:
+      tags:
+        - Authentication
+      parameters:
+        - name: code
+          description: verification code gotten by emaail
+          required: true
+          in: query
+        - name: id
+          description: user id to verify
+          required: true
+          in: query
+
+      responses:
+        200:
+          $ref: "#/components/responses/verificationSuccessful"
+
+        400:
+          content:
+            application/json:
+              examples:
+                missing code query:
+                  value:
+                    status: 400
+                    message: "verification code required"
+
+                missing id in query:
+                  value:
+                    status: 400
+                    message: "user id required"
+
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      description: "Login a user"
+      requestBody:
+        $ref: '#/components/requestBodies/LoginUser'
+      responses:
+        200:
+          $ref: '#/components/responses/loginResponse'
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: "sends a password reset mail containing the password reset code"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+            examples:
+              registered email:
+                value:
+                  email: "example@gmail.com"
+
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/genericResponse'
+
+              examples:
+                valid registered email:
+                  value:
+                    status: 200
+                    message: 'Password reset mail sent successfully'
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/genericResponse'
+              examples:
+                invalid or unregisted email:
+                  value:
+                    status: 400
+                    message: "User not found"
+
+                failed to send email in payload:
+                  value:
+                    status: 400
+                    message: "Email required"
+
+  /auth/reset-password:
+
+    put:
+      tags:
+        - Authentication
+      description: "Change user password using code send with reset mail as a means of authorization"
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: 'example@mail.com'
+                code:
+                  type: integer
+                  example: 1234
+                password:
+                  type: string
+                  example: 'Superpassword123'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/genericResponse'
+
+              example:
+                status: 201
+                message: 'Password reset successfully'
+
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/genericResponse'
+
+              examples:
+                payload missing code:
+                  value:
+                    status: 400
+                    message: 'Password reset code is required'
+                payload missing password:
+                  value:
+                    status: 400
+                    message: 'password is required'
+
+                payload missing email:
+                  value:
+                    status: 400
+                    message: 'Email is required'
+        401:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/genericResponse'
+              example:
+                status: 401
+                message: 'Code is incorrect or not longer valid'
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/genericResponse'
+
+              example:
+                status: 404
+                message: 'User not found'
+
+
+
   #  invoice routes starts here
+
+  /invoice:
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Invoice
+      description: "Get all invoice associated with logged in user"
+      responses:
+        200:
+          $ref: "#/components/responses/multipleInvoices"
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Invoice
+      requestBody:
+        $ref: "#/components/requestBodies/createInvoice"
+      responses:
+        201:
+          $ref: "#/components/responses/singleInvoice"
+
   /invoice/{invoice_id}:
     get:
       tags:
@@ -60,26 +255,7 @@ paths:
             type: string
       responses:
         200:
-          $ref: './invoice.yaml#/components/responses/singleInvoice'
-
-  /invoice:
-    get:
-      tags:
-        - Invoice
-      description: "Get all invoice associated with logged in user"
-      responses:
-        200:
-          $ref: "./invoice.yaml#/components/responses/multipleInvoices"
-    post:
-
-      tags:
-        - Invoice
-      requestBody:
-        $ref: "./invoice.yaml#/components/requestBodies/createInvoice"
-      responses:
-        201:
-          $ref: "./invoice.yaml#/components/responses/singleInvoice"
-
+          $ref: '#/components/responses/singleInvoice'
 
 
 
@@ -89,3 +265,254 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+
+
+  schemas:
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "example@gmail.com"
+        password:
+          type: string
+          example: "password123"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        businessName:
+          type: string
+          example: "BillTracka Enterprises"
+      xml:
+        name: "user"
+
+    LoginSchema:
+      required: true
+      type: object
+      properties:
+        email:
+          type: string
+          example: "example@mail.com"
+        password:
+          type: string
+          example: "password123"
+
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User signed in successfully"
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "uuid"
+            firstName:
+              type: string
+              example: "John"
+            lastName:
+              type: string
+              example: "Doe"
+            email:
+              type: string
+              example: ""
+            phone:
+              type: string
+              example: ""
+            isVerified:
+              type: boolean
+              example: true
+            verificationToken:
+              type: string
+              example: ""
+            businessName:
+              type: string
+              example: ""
+            created_at:
+              type: string
+              example: "2023-11-27T22:23:31.318Z"
+        token:
+          type: string
+          example: "accessToken"
+        refreshToken:
+          type: string
+          example: "refreshToken"
+
+    reqInvoice:
+      type: object
+      properties:
+        issueDate:
+          type: string
+          example: "2021-11-27T21:03:49.294Z"
+        dueDate:
+          type: string
+          example: "2021-11-27T21:03:49.294Z"
+        notes:
+          type: string
+          example: "This is a sample invoice"
+        paymentMode:
+          type: string
+          example: "Bank Transfer"
+        clientName:
+          type: string
+          example: "Water and beans"
+        clientEmail:
+          type: string
+          example: "example@gmail.com"
+        clientPhone:
+          type: string
+          example: "0901234567"
+        clientAddress:
+          type: string
+          example: "ya nuts"
+        clientState:
+          type: string
+          example: "Kyoto"
+        clientCity:
+          type: string
+          example: "Jaku"
+        clientCountry:
+          type: string
+          example: "Japan"
+        clientLga:
+          type: string
+          example: "shigaraki"
+        status:
+          type: string
+          example: "UNPAID"
+        total:
+          type: number
+          example: 36000
+        discount:
+          type: number
+          example: 0
+        amountPaid:
+          type: number
+          example: 26000
+        amountDue:
+          type: number
+          example: 49000
+        ownerId:
+          type: string
+          example: "359d4824-2adc-4b52-a5e0-d6620a90dad0"
+        refId:
+          type: string
+          example: "exfbfp1zwn"
+        paymentLink:
+          type: string
+          example: "https://billtracka.jojothomas.tech/api/invoice/exfbfp1zwn/pay"
+        created_at:
+          type: string
+          example: "2021-11-27T21:03:49.294Z"
+        items:
+          type: array
+
+    invoice:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "f7b1126d-e0a2-45b1-a197-f3904f847199"
+            invoiceNumber:
+              type: string
+              example: "12345678"
+
+
+        - $ref: "#/components/schemas/reqInvoice"
+
+    genericResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+
+
+  requestBodies:
+    CreateUser:
+      required: true
+      description: "User to be created"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+
+
+    LoginUser:
+      required: true
+      description: "User to be logged in"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginSchema'
+
+    createInvoice:
+
+      description: "Create New invoice associated with logged in user business"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/reqInvoice"
+
+
+
+  responses:
+    loginResponse:
+      description: "User logged in successfully"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginResponse'
+
+    verificationSuccessful:
+      description: "User has be successfully verified with the verification token sent via email"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "user verified successfully"
+
+
+    singleInvoice:
+      description: "invoice data with all items associated with it."
+      content:
+        application/json:
+          schema:
+            properties:
+              invoice:
+                $ref: "#/components/schemas/invoice"
+
+
+    multipleInvoices:
+      description: "Array of invoice associated with the logged in user"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/invoice"
+
+
+
+
+
+
+
+
+
