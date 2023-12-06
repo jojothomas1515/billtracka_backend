@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BadRequest, Unauthorized } from '../error/errors.js';
+import { BadRequest, NotFound, Unauthorized } from '../error/errors.js';
 import { passwordValidator } from '../util/validator.js';
 import jwt from 'jsonwebtoken';
 import { compare, hash } from 'bcrypt';
@@ -116,7 +116,7 @@ export async function signIn(req: Request, res: Response): Promise<Response> {
   }
 
   if (!user) {
-    throw new Unauthorized('User not found');
+    throw new NotFound('User not found');
   }
 
   if (!user.isVerified) {
@@ -151,26 +151,26 @@ export async function verifyUser(
 ): Promise<Response> {
   const { code, id } = req.query;
   if (!code) {
-    throw new BadRequest('Token not found');
+    throw new BadRequest('verification code required');
   }
   if (!id) {
-    throw new BadRequest('User not found');
+    throw new BadRequest('user id required');
   }
 
   const user: User | null = await User.findByPk(id as string);
   if (!user) {
-    throw new Unauthorized('User not found');
+    throw new NotFound('User not found');
   }
 
   if (code !== user.verificationToken) {
-    throw new BadRequest('link not longer valid');
+    throw new Unauthorized('invalid verification code');
   }
   user.isVerified = true;
   user.verificationToken = null;
   await user.save();
   return res.status(200).json({
-    message: 'User verified successfully',
-    user,
+    status: 200,
+    message: 'user verified successfully',
   });
 }
 
@@ -188,7 +188,7 @@ export async function refreshToken(
   ) as jwt.JwtPayload & { id: string };
   const user: User | null = await User.findByPk(decoded.id);
   if (!user) {
-    throw new Unauthorized('User not found');
+    throw new NotFound('User not found');
   }
 
   if (refreshToken !== user.refreshToken) {
@@ -215,11 +215,11 @@ export async function forgotPassword(
 ): Promise<Response> {
   const { email } = req.body;
   if (!email) {
-    throw new BadRequest('Email not found');
+    throw new BadRequest('Email required');
   }
   const user: User | null = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Unauthorized('User not found');
+    throw new NotFound('User not found');
   }
   const code: string = Math.floor(Math.random() * 9999).toString();
   user.verificationToken = code;
@@ -234,6 +234,7 @@ export async function forgotPassword(
   await user.save();
 
   return res.status(200).json({
+    status: 200,
     message: 'Password reset mail sent successfully',
   });
 }
@@ -249,9 +250,13 @@ export async function resetPassword(
   if (!password) {
     throw new BadRequest('Password is required');
   }
+
+  if (!email) {
+    throw new BadRequest('Email is required');
+  }
   const user: User | null = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Unauthorized('User not found');
+    throw new NotFound('User not found');
   }
 
   if (code !== user.verificationToken) {
@@ -261,8 +266,8 @@ export async function resetPassword(
   user.hashedPassword = await hash(password, 10);
   user.verificationToken = null;
   await user.save();
-  return res.status(200).json({
+  return res.status(201).json({
+    status: 201,
     message: 'Password reset successfully',
-    user,
   });
 }

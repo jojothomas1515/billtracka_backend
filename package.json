@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/nodemailer": "^6.4.14",
+    "@types/swagger-jsdoc": "^6.0.4",
     "@types/yaml": "^1.9.7",
     "axios": "^1.6.2",
     "bcrypt": "^5.1.1",
@@ -27,6 +28,7 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.35.1",
     "sequelize-typescript": "^2.1.5",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "yaml": "^2.3.4"
   },

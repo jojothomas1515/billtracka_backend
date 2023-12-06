@@ -9,23 +9,36 @@ export async function pay(req: Request, res: Response): Promise<Response> {
   const { id } = req.params;
 
   const invoice = await Invoice.findByPk(id);
-
   if (!invoice) {
     throw new NotFound('Invoice not found');
   }
-  if (invoice.status === 'paid') {
+
+  let price: number;
+
+  try {
+    const { amount } = req.body;
+    price = amount ? Number(amount) * 100 : Number(invoice.amountDue) * 100;
+    console.log(price);
+    console.log(amount);
+    if (price > invoice.amountDue * 100) price = invoice.amountDue * 100;
+  } catch (e) {
+    console.log(e);
+    price = invoice.amountDue * 100;
+  }
+
+  if (invoice.status === 'PAID') {
     return res.json({
       statusCode: 200,
       message: 'Invoice already paid',
     });
   }
-  if (invoice.status === 'cancelled') {
+  if (invoice.status === 'CANCELLED') {
     return res.json({
       statusCode: 200,
       message: 'Invoice already cancelled',
     });
   }
-  if (invoice.status === 'draft') {
+  if (invoice.status === 'DRAFT') {
     return res.json({
       statusCode: 200,
       message: 'Invoice is a draft',
@@ -41,7 +54,7 @@ export async function pay(req: Request, res: Response): Promise<Response> {
 
   const payload = {
     email: invoice.clientEmail,
-    amount: Number(invoice.amountDue) * 100,
+    amount: price,
   };
 
   const headers = {
@@ -53,6 +66,7 @@ export async function pay(req: Request, res: Response): Promise<Response> {
   });
   if (paystackResponse.status === 200) {
     invoice.refId = paystackResponse.data.data.reference;
+    invoice.paymentLink = paystackResponse.data.data.authorization_url;
     await invoice.save();
     return res.json({
       statusCode: paystackResponse.status,
@@ -94,7 +108,9 @@ export async function verifyPayment(
 
       invoice.amountDue = invoice.amountDue - chargeAmount;
       invoice.amountPaid = invoice.amountPaid + chargeAmount;
-      invoice.status = 'PAID';
+
+      if (invoice.amountPaid === invoice.total && invoice.amountDue === 0)
+        invoice.status = 'PAID';
       await invoice.save();
     }
 
