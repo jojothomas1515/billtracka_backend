@@ -20,6 +20,8 @@ export async function createInvoice(
     clientLga,
     status,
     items,
+    notes,
+    paymentMode,
     total,
     discount,
     amountPaid,
@@ -41,7 +43,7 @@ export async function createInvoice(
     where: {
       userId: user.id,
       id: {
-        [Op.in]: items.map((item: { id: string }) => item.id),
+        [Op.in]: items ? items.map((item: { id: string }) => item.id) : [],
       },
     },
   });
@@ -61,6 +63,8 @@ export async function createInvoice(
       discount,
       amountPaid,
       amountDue,
+      notes,
+      paymentMode,
       ownerId: user.id,
     },
     {
@@ -82,23 +86,6 @@ export async function createInvoice(
     });
   }
 
-  //  const payload = {
-  //    email: invoice.clientEmail,
-  //    amount: Number(invoice.amountDue) * 100,
-  //  };
-  //
-  //  const headers = {
-  //    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-  //  };
-  //  const url = 'https://api.paystack.co/transaction/initialize';
-  //  const paystackResponse = await axios.post(url, payload, {
-  //    headers,
-  //  });
-  //  if (paystackResponse.status === 200) {
-  //    invoice.refId = paystackResponse.data.data.reference;
-  //    invoice.paymentLink = paystackResponse.data.data.authorization_url;
-  //    await invoice.save();
-  //  }
   await invoice.save();
 
   return res.status(201).json({
@@ -128,11 +115,16 @@ export async function updateInvoice(
     discount,
     amountPaid,
     amountDue,
+    paymentMode,
+    notes,
   } = req.body;
 
+  if (paymentMode && !['CASH', 'CARD'].includes(paymentMode)) {
+    throw new BadRequest('paymentMode must either CASH or CARD');
+  }
   const invoice = (await Invoice.findOne({
     where: { ownerId: user.id, id },
-  })) as Invoice & { setItem(i: Item[]): void };
+  })) as Invoice & { setItem(i: Item, through?: object): Promise<void> };
 
   if (!invoice) {
     throw new NotFound('Invoice not found');
@@ -142,26 +134,35 @@ export async function updateInvoice(
     where: {
       userId: user.id,
       id: {
-        [Op.in]: items,
+        [Op.in]: items ? items.map((item: { id: string }) => item.id) : [],
       },
     },
   });
 
-  invoice.clientName = clientName;
-  invoice.clientEmail = clientEmail;
-  invoice.clientPhone = clientPhone;
-  invoice.clientAddress = clientAddress;
-  invoice.clientState = clientState;
-  invoice.clientCity = clientCity;
-  invoice.clientCountry = clientCountry;
-  invoice.clientLga = clientLga;
-  invoice.status = status;
-  invoice.total = total;
-  invoice.discount = discount;
-  invoice.amountPaid = amountPaid;
-  invoice.amountDue = amountDue;
-  invoice.setItem(itemsArr);
-
+  invoice.clientName = clientName ?? invoice.clientName;
+  invoice.clientEmail = clientEmail ?? invoice.clientEmail;
+  invoice.clientPhone = clientPhone ?? invoice.clientPhone;
+  invoice.clientAddress = clientAddress ?? invoice.clientAddress;
+  invoice.clientState = clientState ?? invoice.clientState;
+  invoice.clientCity = clientCity ?? invoice.clientCity;
+  invoice.clientCountry = clientCountry ?? invoice.clientCountry;
+  invoice.clientLga = clientLga ?? invoice.clientLga;
+  invoice.status = status ?? invoice.status;
+  invoice.total = total ?? invoice.total;
+  invoice.discount = discount ?? invoice.discount;
+  invoice.amountPaid = amountPaid ?? invoice.amountPaid;
+  invoice.amountDue = amountDue ?? invoice.amountDue;
+  invoice.notes = notes ?? invoice.notes;
+  invoice.paymentMode = paymentMode ?? invoice.paymentMode;
+  for (const item of itemsArr) {
+    await invoice.setItem(item, {
+      through: {
+        quantity: items.filter(
+          (item_: { id: string; quantity: number }) => item.id === item_.id
+        )[0].quantity,
+      },
+    });
+  }
   await invoice.save();
 
   //  const payload = {

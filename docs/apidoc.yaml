@@ -292,7 +292,7 @@ paths:
 
       responses:
         201:
-          $ref: '#/components/responses/createSingleItem'
+          $ref: '#/components/responses/createSingleInvoice'
 
         404:
           description: "Invoice not found"

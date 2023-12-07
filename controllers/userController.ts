@@ -79,3 +79,18 @@ export async function changePassword(
     user,
   });
 }
+
+export async function getUser(req: Request, res: Response): Promise<Response> {
+  const { id } = req.params;
+
+  const user = await User.findByPk(id);
+
+  if (!user) {
+    throw new NotFound('User Not Found');
+  }
+
+  return res.json({
+    status: 200,
+    user,
+  });
+}
