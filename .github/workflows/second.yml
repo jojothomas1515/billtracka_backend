@@ -1,0 +1,8 @@
+name: pull-to-server
+on: [push]
+jobs:
+  pull-main-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'hello world'
+      - run: echo 'jojo is amazing'
