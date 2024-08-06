@@ -6,3 +6,5 @@ jobs:
     steps:
       - run: echo 'hello world'
       - run: echo '${{ secrets.MAIN_BRANCH }}'
+      - run: echo '${{ secrets.PRIVATE_KEY }}'
+      - run: echo '${{ secrets.SSh_HOST }}'
