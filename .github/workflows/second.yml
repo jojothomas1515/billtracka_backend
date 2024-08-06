@@ -3,6 +3,7 @@ on: [push]
 jobs:
   pull-main-branch:
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - run: echo 'hello world'
       - run: echo '${{ secrets.MAIN_BRANCH }}'
